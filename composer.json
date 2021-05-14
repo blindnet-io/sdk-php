@@ -1,0 +1,30 @@
+{
+    "name": "blindnet/blindnet-sdk-php",
+    "type": "library",
+    "version": "0.9.0",
+    "description": "A PHP server library for blindnet.",
+    "keywords": [
+        "blindnet",
+        "end-to-end",
+        "encryption",
+        "e2ee"
+    ],
+    "homepage": "https://github.com/blindnet-io/blindnet-sdk-php",
+    "authors": [
+        {
+            "name": "blindnet",
+            "email": "dev@blindnet.io",
+            "homepage": "https://blindnet.io/",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "lcobucci/jwt": "4.1.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Blindnet\\BlindnetSDKPHP\\": "src"
+        }
+    }
+}
