@@ -6,6 +6,7 @@ use DateTimeImmutable;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer;
+use Ramsey\Uuid\Uuid;
 use Blindnet\BlindnetSDKPHP\Exception\AuthenticationException;
 use Blindnet\BlindnetSDKPHP\Exception\BlindnetException;
 
@@ -29,13 +30,29 @@ class Blindnet {
         $this->refreshClientToken();
     }
 
-    static function init($appKey, $appId, $apiEndpoint = 'https://api.blindnet.io') {
+    /**
+     * Creates an instance of Blindnet.
+     * 
+     * @param string $appKey Application private Ed25519 key
+     * @param string $appId Appicartion ID
+     * @param string $apiEndpoint Optional API endpoint URL. Default value is 'https://api.blindnet.io'
+     * 
+     * @return Blindnet A Blindnet instance
+     */
+    static function init(string $appKey, string $appId, string $apiEndpoint = 'https://api.blindnet.io'): Blindnet {
         return new Blindnet($appKey, $appId, $apiEndpoint);
     }
 
-    function createTempUserToken($groupId) {
+    /**
+     * Creates a JWT for non-registered users of your application, usually data senders.
+     * 
+     * @param string $groupId ID of the group to which a data sender is sending the data
+     * 
+     * @return string JWT for a non-registered user
+     */
+    function createTempUserToken(string $groupId): string {
         $now = new DateTimeImmutable();
-        $tokenId = bin2hex(random_bytes(16));
+        $tokenId = Uuid::uuid4();
         $builder = self::$jwtConfig->builder()
                 ->withHeader('typ', 'tjwt')
                 ->withClaim('app', self::$appId)
@@ -45,25 +62,33 @@ class Blindnet {
         return $this->createJwt($builder);
     }
 
-    function createUserToken($userId, $groupId) {
+    /**
+     * Creates a JWT for registered users of your application, usually data receivers.
+     * 
+     * @param string $userId ID of a registered user
+     * @param string $groupId ID of the group to which a registered user belongs
+     * 
+     * @return string JWT for a registered user
+     */
+    function createUserToken(string $userId, string $groupId): string {
         $now = new DateTimeImmutable();
         $builder = self::$jwtConfig->builder()
                 ->withHeader('typ', 'jwt')
                 ->withClaim('uid', $userId)
                 ->withClaim('app', self::$appId)
                 ->withClaim('gid', $groupId)
-                ->expiresAt($now->modify('+30 minutes'));
+                ->expiresAt($now->modify('+12 hours'));
         return $this->createJwt($builder);
     }
 
     private function refreshClientToken() {
         $now = new DateTimeImmutable();
-        $tokenId = bin2hex(random_bytes(16));
+        $tokenId = Uuid::uuid4();
         $builder = self::$jwtConfig->builder()
                 ->withHeader('typ', 'cjwt')
                 ->withClaim('app', self::$appId)
                 ->withClaim('tid', $tokenId)
-                ->expiresAt($now->modify('+30 minutes'));
+                ->expiresAt($now->modify('+24 hours'));
         self::$clientToken = $this->createJwt($builder);
     }
 
@@ -72,7 +97,17 @@ class Blindnet {
         return $token->toString();
     }
 
-    function forgetData($dataId) {
+    /**
+     * Deletes an encrypted data key from blindnet.
+     * 
+     * @param string $dataId ID of the data to delete
+     * 
+     * @return True If the deletion is successful 
+     * 
+     * @throws AuthenticationException When request to blindnet is unauthenticated
+     * @throws BlindnetException When request to blindnet is not successful 
+     */
+    function forgetData(string $dataId): bool {
         $defaults = array(
             CURLOPT_URL => self::$apiEndpoint . '/api/v1/documents/' . $dataId,
             CURLOPT_CUSTOMREQUEST => 'DELETE',
@@ -83,7 +118,17 @@ class Blindnet {
         return $this->makeReq($defaults, true, 'Error while forgeting the data with id ' . $dataId);
     }
 
-    function revokeAccess($userId) {
+    /**
+     * Deletes all encrypted data keys of a given user.
+     * 
+     * @param string $userId ID of a user to revoke access
+     * 
+     * @return True If the access revokation is successful 
+     * 
+     * @throws AuthenticationException When request to blindnet is unauthenticated
+     * @throws BlindnetException When request to blindnet is not successful 
+     */
+    function revokeAccess(string $userId): bool {
         $defaults = array(
             CURLOPT_URL => self::$apiEndpoint . '/api/v1/documents/user/' . $userId,
             CURLOPT_CUSTOMREQUEST => 'DELETE',
@@ -94,7 +139,17 @@ class Blindnet {
         return $this->makeReq($defaults, true, 'Error while revoking access to user with id ' . $userId);
     }
 
-    function forgetUser($userId) {
+    /**
+     * Deletes a user from blindnet.
+     * 
+     * @param string $dataId ID of a user to delete
+     * 
+     * @return True If the deletion is successful 
+     * 
+     * @throws AuthenticationException When request to blindnet is unauthenticated
+     * @throws BlindnetException When request to blindnet is not successful 
+     */
+    function forgetUser(string $userId): bool {
         $defaults = array(
             CURLOPT_URL => self::$apiEndpoint . '/api/v1/users/' . $userId,
             CURLOPT_CUSTOMREQUEST => 'DELETE',
@@ -105,7 +160,19 @@ class Blindnet {
         return $this->makeReq($defaults, true, 'Error while forgeting the user with id ' . $userId);
     }
 
-    function forgetGroup($groupId) {
+    /**
+     * Deletes a group from blindnet.
+     * 
+     * Deletes all users that belong to the group and all their encrypted data keys.
+     * 
+     * @param string $groupId ID of a group to delete
+     * 
+     * @return True If the deletion is successful 
+     * 
+     * @throws AuthenticationException When request to blindnet is unauthenticated
+     * @throws BlindnetException When request to blindnet is not successful 
+     */
+    function forgetGroup(string $groupId): bool {
         $defaults = array(
             CURLOPT_URL => self::$apiEndpoint . '/api/v1/group/' . $groupId,
             CURLOPT_CUSTOMREQUEST => 'DELETE',
@@ -116,7 +183,7 @@ class Blindnet {
         return $this->makeReq($defaults, true, 'Error while forgeting the group with id ' . $groupId);
     }
 
-    private function makeReq($data, $isFirst, $excMsg) {
+    private function makeReq($data, $isFirst, $excMsg): bool {
         $ch = curl_init(); 
         curl_setopt_array($ch, $data);
         curl_exec($ch); 
