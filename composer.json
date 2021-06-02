@@ -1,7 +1,7 @@
 {
     "name": "blindnet/blindnet-sdk-php",
     "type": "library",
-    "version": "0.9.1",
+    "version": "0.9.2",
     "description": "A PHP server library for blindnet.",
     "keywords": [
         "blindnet",
@@ -19,9 +19,9 @@
         }
     ],
     "require": {
-        "php": ">=7.4",
-        "lcobucci/jwt": "4.1.4",
-        "ramsey/uuid": "4.1.1"
+        "php": ">=7.2",
+        "ramsey/uuid": "4.1.1",
+        "spomky-labs/base64url": "v2.0.4"
     },
     "autoload": {
         "psr-4": {

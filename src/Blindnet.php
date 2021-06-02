@@ -3,10 +3,9 @@
 namespace Blindnet\BlindnetSDKPHP;
 
 use DateTimeImmutable;
-use Lcobucci\JWT\Configuration;
-use Lcobucci\JWT\Signer\Key\InMemory;
-use Lcobucci\JWT\Signer;
+
 use Ramsey\Uuid\Uuid;
+use Base64Url\Base64Url;
 use Blindnet\BlindnetSDKPHP\Exception\AuthenticationException;
 use Blindnet\BlindnetSDKPHP\Exception\BlindnetException;
 
@@ -15,25 +14,19 @@ class Blindnet {
     protected static $appKey;
     protected static $appId;
     protected static $clientToken;
-    protected static $jwtConfig;
     protected static $apiEndpoint;
 
     private function __construct($appKey, $appId, $apiEndpoint) {
-        self::$appKey = $appKey;
+        self::$appKey = base64_decode($appKey);
         self::$appId = $appId;
         self::$apiEndpoint = $apiEndpoint;
-        self::$jwtConfig = Configuration::forAsymmetricSigner(
-            new Signer\EdDSA(),
-            InMemory::base64Encoded($appKey),
-            InMemory::base64Encoded('')
-        );
         $this->refreshClientToken();
     }
 
     /**
      * Creates an instance of Blindnet.
      * 
-     * @param string $appKey Application private Ed25519 key
+     * @param string $appKey Application private Ed25519 key (base64 encoded)
      * @param string $appId Appicartion ID
      * @param string $apiEndpoint Optional API endpoint URL. Default value is 'https://api.blindnet.io'
      * 
@@ -52,14 +45,11 @@ class Blindnet {
      */
     function createTempUserToken(string $groupId): string {
         $now = new DateTimeImmutable();
+        $exp = $now->modify('+30 minutes')->getTimestamp();
         $tokenId = Uuid::uuid4();
-        $builder = self::$jwtConfig->builder()
-                ->withHeader('typ', 'tjwt')
-                ->withClaim('app', self::$appId)
-                ->withClaim('tid', $tokenId)
-                ->withClaim('gid', $groupId)
-                ->expiresAt($now->modify('+30 minutes'));
-        return $this->createJwt($builder);
+        $header = json_encode(array('typ' => 'tjwt', 'alg' => 'EdDSA'));
+        $payload = json_encode(array('app' => self::$appId, 'tid' => $tokenId, 'gid' => $groupId, 'exp' => $exp));
+        return $this->createAndSign($header, $payload);
     }
 
     /**
@@ -72,29 +62,25 @@ class Blindnet {
      */
     function createUserToken(string $userId, string $groupId): string {
         $now = new DateTimeImmutable();
-        $builder = self::$jwtConfig->builder()
-                ->withHeader('typ', 'jwt')
-                ->withClaim('uid', $userId)
-                ->withClaim('app', self::$appId)
-                ->withClaim('gid', $groupId)
-                ->expiresAt($now->modify('+12 hours'));
-        return $this->createJwt($builder);
+        $exp = $now->modify('+12 hours')->getTimestamp();
+        $header = json_encode(array('typ' => 'jwt', 'alg' => 'EdDSA'));
+        $payload = json_encode(array('uid' => $userId, 'app' => self::$appId, 'gid' => $groupId, 'exp' => $exp));
+        return $this->createAndSign($header, $payload);
     }
 
     private function refreshClientToken() {
         $now = new DateTimeImmutable();
+        $exp = $now->modify('+24 hours')->getTimestamp();
         $tokenId = Uuid::uuid4();
-        $builder = self::$jwtConfig->builder()
-                ->withHeader('typ', 'cjwt')
-                ->withClaim('app', self::$appId)
-                ->withClaim('tid', $tokenId)
-                ->expiresAt($now->modify('+24 hours'));
-        self::$clientToken = $this->createJwt($builder);
+        $header = json_encode(array('typ' => 'cjwt', 'alg' => 'EdDSA'));
+        $payload = json_encode(array('app' => self::$appId, 'tid' => $tokenId, 'exp' => $exp));
+        self::$clientToken = $this->createAndSign($header, $payload);
     }
 
-    private function createJwt($builder) {
-        $token = $builder->getToken(self::$jwtConfig->signer(), self::$jwtConfig->signingKey());
-        return $token->toString();
+    private function createAndSign($header, $payload) {
+        $temp = Base64Url::encode($header) . '.' . Base64Url::encode($payload);
+        $sig = Base64Url::encode(sodium_crypto_sign_detached($temp, self::$appKey));
+        return $temp . '.' . $sig;
     }
 
     /**
