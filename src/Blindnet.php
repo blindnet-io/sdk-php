@@ -27,7 +27,7 @@ class Blindnet {
      * Creates an instance of Blindnet.
      * 
      * @param string $appKey Application private Ed25519 key (base64 encoded)
-     * @param string $appId Appicartion ID
+     * @param string $appId Application ID
      * @param string $apiEndpoint Optional API endpoint URL. Default value is 'https://api.blindnet.io'
      * 
      * @return Blindnet A Blindnet instance
@@ -101,7 +101,7 @@ class Blindnet {
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . self::$clientToken)
         );
-        return $this->makeReq($defaults, true, 'Error while forgeting the data with id ' . $dataId);
+        return $this->makeReq($defaults, true, 'Error while forgetting the data with id ' . $dataId);
     }
 
     /**
@@ -109,7 +109,7 @@ class Blindnet {
      * 
      * @param string $userId ID of a user to revoke access
      * 
-     * @return True If the access revokation is successful 
+     * @return True If the access revocation is successful 
      * 
      * @throws AuthenticationException When request to blindnet is unauthenticated
      * @throws BlindnetException When request to blindnet is not successful 
@@ -143,7 +143,7 @@ class Blindnet {
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . self::$clientToken)
         );
-        return $this->makeReq($defaults, true, 'Error while forgeting the user with id ' . $userId);
+        return $this->makeReq($defaults, true, 'Error while forgetting the user with id ' . $userId);
     }
 
     /**
@@ -166,7 +166,7 @@ class Blindnet {
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . self::$clientToken)
         );
-        return $this->makeReq($defaults, true, 'Error while forgeting the group with id ' . $groupId);
+        return $this->makeReq($defaults, true, 'Error while forgetting the group with id ' . $groupId);
     }
 
     private function makeReq($data, $isFirst, $excMsg): bool {
@@ -177,7 +177,8 @@ class Blindnet {
         curl_close($ch);
         if($httpcode == 401 && $isFirst) {
             $this->refreshClientToken();
-            $this->makreReq($data, false);
+            $data[CURLOPT_HTTPHEADER] = array('Authorization: Bearer ' . self::$clientToken);
+            return $this->makeReq($data, false, $excMsg);
         }
         elseif ($httpcode == 401) 
             throw new AuthenticationException();
