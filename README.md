@@ -37,10 +37,10 @@ This is the PHP [server-side SDK](https://blindnet.dev/docs/extra/glossary#serve
 
 ## Installation
 
-Use [npm][npm] or [yarn][yarn] to install the `@blindnet/sdk-javascript` package:
+Use [composer][composer] to install the `blindnet/blindnet-sdk-php` package:
 
 ```bash
-npm install @blindnet/sdk-node
+composer require blindnet/blindnet-sdk-php
 ```
 
 ## Usage
@@ -75,8 +75,7 @@ The blindnet devkit sdk-php-server is available under [MIT][license] (and [here]
 
 <!-- Tools -->
 
-[npm]: https://docs.npmjs.com/
-[yarn]: https://yarnpkg.com/
+[composer]: https://getcomposer.org/
 
 <!-- common URLs -->
 [devkit]: https://github.com/blindnet-io/blindnet.dev
