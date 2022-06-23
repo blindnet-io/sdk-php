@@ -28,7 +28,7 @@
 
 This is the PHP [server-side SDK](https://blindnet.dev/docs/glossary#server-side-sdk) component of [blindnet devkit][devkit] allowing you to:
 
-- Generate [authentication tokens](https://blindnet.dev/docs/extra/glossary#authentication-token) to allow users to access blindnet.
+- Generate [authentication tokens](https://blindnet.dev/docs/glossary#authentication-token) to allow users to access blindnet.
 - Manage application users and data on blindnet.
 
 ## Get Started
