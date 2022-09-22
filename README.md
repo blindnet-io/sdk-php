@@ -1,5 +1,5 @@
 <h1 align="center">
-  blindnet devkit<br />
+  blindnet encryption engine<br />
   PHP SDK
 </h1>
 
@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <a href="https://blindnet.dev/docs">Documentation</a>
+  <a href="https://blindnet.dev/docs/encryption">Documentation</a>
   &nbsp;•&nbsp;
   <a href="https://github.com/blindnet-io/sdk-php-server/issues">Submit an Issue</a>
   &nbsp;•&nbsp;
@@ -26,14 +26,14 @@
 
 ## About
 
-This is the PHP [server-side SDK](https://blindnet.dev/docs/glossary#server-side-sdk) component of [blindnet devkit][devkit] allowing you to:
+This is the PHP [server-side SDK](https://blindnet.dev/docs/references/glossary#server-side-sdk) component of the blindnet encryption engine allowing you to:
 
-- Generate [authentication tokens](https://blindnet.dev/docs/glossary#authentication-token) to allow users to access blindnet.
+- Generate [authentication tokens](https://blindnet.dev/docs/references/glossary#authentication-token) to allow users to access blindnet.
 - Manage application users and data on blindnet.
 
 ## Get Started
 
-:rocket: Check out our [Quick Start Guide](https://blindnet.dev/docs/quickstart) to get started in a snap.
+:rocket: Check out our [Quick Start Guide](https://blindnet.dev/docs/encryption/quickstart) to get started in a snap.
 
 ## Installation
 
@@ -45,7 +45,7 @@ composer require blindnet/blindnet-sdk-php
 
 ## Usage
 
-📑 The API reference of blindnet devkit PHP Server SDK is available on [blindnet.dev](https://blindnet.dev/docs/api_reference/server/php/latest).
+📑 The API reference of the blindnet encryption engine PHP Server SDK is available on [blindnet.dev](https://blindnet.dev/docs/encryption/api_reference/php-server).
 
 ## Contributing
 
@@ -66,7 +66,7 @@ Stay up to date with new releases and projects, learn more about how to protect 
 
 ## License
 
-The blindnet devkit sdk-php-server is available under [MIT][license] (and [here](https://github.com/blindnet-io/openness-framework/blob/main/docs/decision-records/DR-0001-oss-license.md) is why).
+The blindnet encryption engine sdk-php-server is available under [MIT][license] (and [here](https://github.com/blindnet-io/openness-framework/blob/main/docs/decision-records/DR-0001-oss-license.md) is why).
 
 <!-- project's URLs -->
 
@@ -78,7 +78,6 @@ The blindnet devkit sdk-php-server is available under [MIT][license] (and [here]
 [composer]: https://getcomposer.org/
 
 <!-- common URLs -->
-[devkit]: https://github.com/blindnet-io/blindnet.dev
 [openness]: https://github.com/blindnet-io/openness-framework
 [product]: https://github.com/blindnet-io/product-management
 [request]: https://github.com/blindnet-io/devrel-management/issues/new?assignees=noelmace&labels=request%2Ctriage&template=request.yml&title=%5BRequest%5D%3A+
